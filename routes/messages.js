@@ -749,8 +749,8 @@ router.post('/:id/analyze', auth, async (req, res) => {
         // Utiliser le service OpenAI pour analyser le message
         aiAnalysis = await openAIService.analyzeMessage(content, emotion);
         console.log("✅ Analyse OpenAI réussie pour le message:", message._id);
-      } else {
-        // Fallback si OpenAI n'est pas disponible
+    } else {
+      // Fallback si OpenAI n'est pas disponible
         console.log("ℹ️ Service OpenAI non disponible, utilisation de l'analyse fallback");
         aiAnalysis = generateFallbackAnalysis(content, emotion);
       }

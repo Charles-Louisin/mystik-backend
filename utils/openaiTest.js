@@ -20,13 +20,13 @@ class OpenAIService {
    * Initialise le client OpenAI
    */
   initialize() {
-    // Vérifier si la clé API est disponible
+// Vérifier si la clé API est disponible
     const apiKey = process.env.OPENAI_API_KEY;
     
     if (!apiKey) {
       console.warn("⚠️ Attention: Aucune clé OpenAI n'est définie. L'analyse avancée des messages ne sera pas disponible.");
       return false;
-    }
+}
 
     // Vérifier si la clé semble valide (commence par sk- ou sk-proj-)
     if (!apiKey.startsWith('sk-')) {
@@ -38,7 +38,7 @@ class OpenAIService {
       // Initialiser le client OpenAI
       this.openai = new OpenAI({
         apiKey: apiKey
-      });
+  });
       
       this.isAvailable = true;
       console.log("✅ Client OpenAI initialisé avec succès");
@@ -82,7 +82,7 @@ class OpenAIService {
       return false;
     }
   }
-
+  
   /**
    * Analyse un message avec OpenAI
    * @param {string} content - Contenu du message
@@ -134,7 +134,7 @@ class OpenAIService {
         summary: parts[1]?.trim() || "Résumé non disponible",
         suggestionForReply: parts[2]?.trim() || "Suggestion de réponse non disponible"
       };
-    } catch (error) {
+} catch (error) {
       console.error("❌ Erreur lors de l'analyse du message avec OpenAI:", error);
       throw error;
     }

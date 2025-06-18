@@ -20,8 +20,10 @@ const PORT = process.env.PORT || 5000;
 
 // Vérification des variables d'environnement
 console.log('MongoDB URI:', process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + '...' : 'Non défini');
+console.log('MongoDB URL:', process.env.MONGODB_URL ? process.env.MONGODB_URL.substring(0, 20) + '...' : 'Non défini');
 console.log('Port:', PORT);
 console.log('Environnement:', process.env.NODE_ENV || 'development');
+console.log('Variables disponibles:', Object.keys(process.env).filter(key => key.includes('MONGO')).join(', '));
 
 // Middleware pour la journalisation des requêtes
 app.use((req, res, next) => {
@@ -75,32 +77,39 @@ async function connectWithRetry(retries = 5, delay = 5000) {
   
   for (let i = 0; i < retries; i++) {
     try {
-      await mongoose.connect(process.env.MONGODB_URI, {
+      // Vérifier les deux variables d'environnement possibles
+      const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URL;
+      
+      if (!mongoUri) {
+        throw new Error("Variable d'environnement MONGODB_URI ou MONGODB_URL non définie");
+      }
+      
+      await mongoose.connect(mongoUri, {
         serverSelectionTimeoutMS: 5000, // Timeout après 5s
         socketTimeoutMS: 45000, // Fermer les sockets après 45s d'inactivité
       });
       
-      console.log('Connexion à MongoDB établie');
+    console.log('Connexion à MongoDB établie');
+    
+    // Vérifier que la base de données est bien créée
+    try {
+      // Récupérer les collections existantes
+      const collections = await mongoose.connection.db.listCollections().toArray();
       
-      // Vérifier que la base de données est bien créée
-      try {
-        // Récupérer les collections existantes
-        const collections = await mongoose.connection.db.listCollections().toArray();
+      if (collections.length === 0) {
+        console.log('Base de données vide, initialisation des collections...');
         
-        if (collections.length === 0) {
-          console.log('Base de données vide, initialisation des collections...');
-          
-          // Créer les collections principales si elles n'existent pas
-          await mongoose.connection.db.createCollection('users');
-          await mongoose.connection.db.createCollection('messages');
-          
-          console.log('Collections créées avec succès');
-        } else {
-          console.log('Collections existantes:', collections.map(c => c.name).join(', '));
-        }
-      } catch (err) {
-        console.error('Erreur lors de la vérification des collections:', err);
+        // Créer les collections principales si elles n'existent pas
+        await mongoose.connection.db.createCollection('users');
+        await mongoose.connection.db.createCollection('messages');
+        
+        console.log('Collections créées avec succès');
+      } else {
+        console.log('Collections existantes:', collections.map(c => c.name).join(', '));
       }
+    } catch (err) {
+      console.error('Erreur lors de la vérification des collections:', err);
+    }
       
       return; // Sortir de la fonction si la connexion réussit
     } catch (err) {
@@ -135,7 +144,7 @@ mongoose.connection.on('error', err => {
 mongoose.connection.on('disconnected', () => {
   console.warn('Déconnecté de MongoDB, tentative de reconnexion...');
   connectWithRetry(3, 3000);
-});
+  });
 
 // Routes
 app.use('/api/auth', authRoutes);

@@ -1,5 +1,6 @@
 # env files (can opt-in for committing if needed)
 .env
+railway.json
 
 # dependencies
 /node_modules

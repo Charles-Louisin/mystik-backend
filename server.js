@@ -20,10 +20,8 @@ const PORT = process.env.PORT || 5000;
 
 // Vérification des variables d'environnement
 console.log('MongoDB URI:', process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 20) + '...' : 'Non défini');
-console.log('MongoDB URL:', process.env.MONGODB_URL ? process.env.MONGODB_URL.substring(0, 20) + '...' : 'Non défini');
 console.log('Port:', PORT);
 console.log('Environnement:', process.env.NODE_ENV || 'development');
-console.log('Variables disponibles:', Object.keys(process.env).filter(key => key.includes('MONGO')).join(', '));
 
 // Middleware pour la journalisation des requêtes
 app.use((req, res, next) => {
@@ -75,16 +73,20 @@ if (!fs.existsSync(uploadsDir)) {
 async function connectWithRetry(retries = 5, delay = 5000) {
   let lastError;
   
+  // Afficher toutes les variables d'environnement liées à MongoDB
+  console.log('Tentative de connexion à MongoDB...');
+  console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Défini (longueur: ' + process.env.MONGODB_URI.length + ')' : 'Non défini');
+  console.log('Variables d\'environnement disponibles:', Object.keys(process.env).filter(key => key.includes('MONGO')));
+  
   for (let i = 0; i < retries; i++) {
     try {
-      // Vérifier les deux variables d'environnement possibles
-      const mongoUri = process.env.MONGODB_URI || process.env.MONGODB_URL;
-      
-      if (!mongoUri) {
-        throw new Error("Variable d'environnement MONGODB_URI ou MONGODB_URL non définie");
+      if (!process.env.MONGODB_URI) {
+        throw new Error("Variable d'environnement MONGODB_URI non définie");
       }
       
-      await mongoose.connect(mongoUri, {
+      console.log('Tentative de connexion avec URI:', process.env.MONGODB_URI.substring(0, 20) + '...');
+      
+      await mongoose.connect(process.env.MONGODB_URI, {
         serverSelectionTimeoutMS: 5000, // Timeout après 5s
         socketTimeoutMS: 45000, // Fermer les sockets après 45s d'inactivité
       });

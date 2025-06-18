@@ -33,7 +33,8 @@ const isAudioMimeType = (mimeType) => {
     'audio/webm',
     'audio/mp4',
     'audio/aac',
-    'audio/flac'
+    'audio/flac',
+    'video/webm'
   ];
   
   return audioMimeTypes.includes(mimeType) || mimeType.startsWith('audio/');

@@ -1,4 +1,5 @@
-const express = require('express');
+q
+onst express = require('express');
 const router = express.Router();
 const Message = require('../models/Message');
 const User = require('../models/User');
@@ -125,12 +126,6 @@ function generateFallbackAnalysis(content, emotion) {
     suggestionForReply
   };
 }
-
-// @route   POST /api/messages/send
-// @desc    Send an anonymous message
-// @access  Public
-// Code à ajouter dans routes/messages.js
-// Remplacer le code existant par celui-ci
 
 // @route   POST /api/messages/send
 // @desc    Send an anonymous message
@@ -301,8 +296,7 @@ router.post('/send', upload.single('voiceMessage'), async (req, res) => {
       nickname: nickname || 'Anonyme',
       emotionalFilter: selectedEmotionalFilter,
       emoji: emoji || 'Non défini',
-      hint: hint || 'Non défini',
-      riddle: newMessage.clues.riddle // Ajouter la devinette aux logs
+      hint: hint || 'Non défini'
     });
 
     // Ajouter le message vocal s'il existe
@@ -357,7 +351,7 @@ router.post('/send', upload.single('voiceMessage'), async (req, res) => {
       error: err.message 
     });
   }
-}); 
+});
 
 // @route   GET /api/messages/received
 // @desc    Get all messages received by authenticated user

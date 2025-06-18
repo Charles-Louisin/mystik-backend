@@ -2,24 +2,44 @@
 .env
 
 # dependencies
-/node_modules
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-
-# misc
-.DS_Store
-*.pem
+node_modules/
 
 # logs
 logs
 *.log
+npm-debug.log*
+
+# misc
+.DS_Store
+Thumbs.db
 
 # temp files
-/tmp
-/temp
+tmp/
+temp/
 .cache
 
 # uploads
 /uploads/*
 !/uploads/.gitkeep
+
+# Fichiers d'environnement
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dossiers de build
+dist/
+build/
+
+# Fichiers d'IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Fichiers de couverture de tests
+coverage/
+
+# Fichiers de débogage
+.nyc_output/

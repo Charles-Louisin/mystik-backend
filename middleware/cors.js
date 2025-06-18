@@ -3,7 +3,9 @@ const corsMiddleware = (req, res, next) => {
   const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5000',
-    process.env.FRONTEND_URL
+    process.env.FRONTEND_URL,
+    'https://mystik-frontend.vercel.app',  // Ajout explicite du domaine Vercel
+    'https://mystik.vercel.app'            // Alternative si vous utilisez un autre nom
   ].filter(Boolean);
   
   const origin = req.headers.origin;

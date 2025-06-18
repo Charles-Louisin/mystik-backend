@@ -11,10 +11,6 @@ const multer = require('multer');
 const { processVoice } = require('../utils/voiceProcessor');
 const mongoose = require('mongoose');
 
-// Log pour déboguer les variables d'environnement
-console.log('OPENAI_API_KEY disponible:', !!process.env.OPENAI_API_KEY);
-console.log('OPENAI_API_KEY commence par:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'non défini');
-
 // Configuration de multer pour les fichiers audio
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -48,23 +44,8 @@ const upload = multer({
   }
 });
 
-// Importer OpenAI pour l'analyse des messages
-const OpenAI = require('openai');
-
-// Utiliser la clé API OpenAI depuis les variables d'environnement
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-let openai = null;
-
-// Initialiser OpenAI avec la clé définie ci-dessus
-if (OPENAI_API_KEY) {
-  console.log("Initialisation d'OpenAI avec la clé définie dans les variables d'environnement");
-  openai = new OpenAI({
-    apiKey: OPENAI_API_KEY
-  });
-} else {
-  console.warn("Attention: Aucune clé OpenAI n'est définie. L'analyse avancée des messages ne sera pas disponible.");
-}
+// Importer le service OpenAI pour l'analyse des messages
+const openAIService = require('../utils/openaiTest');
 
 // Fonction de fallback pour générer une analyse sans OpenAI
 function generateFallbackAnalysis(content, emotion) {
@@ -762,52 +743,20 @@ router.post('/:id/analyze', auth, async (req, res) => {
     
     let aiAnalysis = {};
     
-    // Vérifier si OpenAI est disponible
-    if (openai) {
-      try {
-        // Créer un prompt adapté pour l'analyse
-        const prompt = `
-        Analyse ce message envoyé avec l'émotion "${emotion}":
-        
-        "${content}"
-        
-        Réponds en français avec:
-        1. Une analyse de l'intention émotionnelle de l'expéditeur (max 2 phrases)
-        2. Un résumé court du message (max 2 phrases)
-        3. Une suggestion de réponse adaptée à l'émotion et au contenu (max 3 phrases)
-        
-        Sois précis et adapte ton analyse à l'émotion indiquée. Assure-toi que ta réponse est vraiment en rapport avec le contenu du message et l'humeur choisie.
-        `;
-        
-        // Appeler l'API OpenAI pour l'analyse
-        const completion = await openai.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "Tu es un assistant spécialisé dans l'analyse émotionnelle des messages. Tu fournis des analyses pertinentes et des suggestions de réponse adaptées au ton émotionnel." },
-            { role: "user", content: prompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 500
-        });
-        
-        // Extraire la réponse
-        const aiResponse = completion.choices[0].message.content;
-        
-        // Traiter la réponse pour extraire les différentes parties
-        const parts = aiResponse.split(/\d+\.\s+/).filter(part => part.trim());
-        
-        aiAnalysis = {
-          emotionalIntent: parts[0]?.trim() || "Intention émotionnelle non détectée",
-          summary: parts[1]?.trim() || "Résumé non disponible",
-          suggestionForReply: parts[2]?.trim() || "Suggestion de réponse non disponible"
-        };
-      } catch (openaiError) {
-        console.error("Erreur lors de l'appel à OpenAI:", openaiError);
-        // Utiliser l'analyse de fallback en cas d'erreur
+    try {
+      // Vérifier si le service OpenAI est disponible
+      if (openAIService.isServiceAvailable()) {
+        // Utiliser le service OpenAI pour analyser le message
+        aiAnalysis = await openAIService.analyzeMessage(content, emotion);
+        console.log("✅ Analyse OpenAI réussie pour le message:", message._id);
+      } else {
+        // Fallback si OpenAI n'est pas disponible
+        console.log("ℹ️ Service OpenAI non disponible, utilisation de l'analyse fallback");
         aiAnalysis = generateFallbackAnalysis(content, emotion);
       }
-    } else {
-      // Fallback si OpenAI n'est pas disponible
+    } catch (error) {
+      console.error("❌ Erreur lors de l'analyse du message:", error);
+      // Utiliser l'analyse de fallback en cas d'erreur
       aiAnalysis = generateFallbackAnalysis(content, emotion);
     }
     

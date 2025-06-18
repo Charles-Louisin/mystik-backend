@@ -1,2 +1,25 @@
 # env files (can opt-in for committing if needed)
 .env
+
+# dependencies
+/node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# misc
+.DS_Store
+*.pem
+
+# logs
+logs
+*.log
+
+# temp files
+/tmp
+/temp
+.cache
+
+# uploads
+/uploads/*
+!/uploads/.gitkeep
